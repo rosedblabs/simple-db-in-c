@@ -6,4 +6,6 @@ run:
 
 clean:
 	rm -rf simple-db
-	
+
+format: *.c
+	clang-format -style=Google -i *.c
