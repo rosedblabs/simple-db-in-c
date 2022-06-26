@@ -5,7 +5,7 @@ run:
 	./simple-db
 
 clean:
-	rm -rf simple-db
+	rm -rf simple-db test.db
 
 format: *.c
-	clang-format -style=Google -i *.c
+	clang-format -style=Google -i *.c *.h
