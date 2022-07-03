@@ -4,6 +4,7 @@
 
 #include "input.h"
 #include "pager.h"
+#include "prepare.h"
 #include "stdbool.h"
 #include "stdio.h"
 #include "stdlib.h"
@@ -12,42 +13,15 @@
 
 #define size_of_attribute(Struct, Attribute) sizeof(((Struct*)0)->Attribute)
 
-#define COLUMN_USERNAME_SIZE 32
-#define COLUMN_EMAIL_SIZE 255
-
-typedef struct {
-  uint32_t id;
-  char username[COLUMN_USERNAME_SIZE + 1];
-  char email[COLUMN_EMAIL_SIZE + 1];
-} Row;
-
 typedef enum {
   META_COMMAND_SUCCESS,
   META_COMMAND_UNRECOGNIZED_COMMAND,
 } MetaCommandResult;
 
 typedef enum {
-  PREPARE_SUCCESS,
-  PREPARE_SYNTAX_ERROR,
-  PREPARE_NEGATIVE_ID,
-  PREPARE_STRING_TOO_LONG,
-  PREAPRE_UNRECOGNIZED_STATEMENT,
-} PrepareResult;
-
-typedef enum {
-  STATEMENT_INSERT,
-  STATEMENT_SELECT,
-} StatementType;
-
-typedef enum {
   EXECUTE_SUCCESS,
   EXECUTE_TABLE_FULL,
 } ExecuteResult;
-
-typedef struct {
-  StatementType type;
-  Row row_to_insert;
-} Statement;
 
 const uint32_t ID_SIZE = size_of_attribute(Row, id);
 const uint32_t USERNAME_SIZE = size_of_attribute(Row, username);
@@ -73,9 +47,6 @@ typedef struct {
 } Cursor;
 
 MetaCommandResult do_meta_command(InputBuffer* input_buffer, Table* table);
-PrepareResult prepare_statement(InputBuffer* input_buffer,
-                                Statement* statement);
-PrepareResult prepare_insert(InputBuffer* input_buffer, Statement* statement);
 ExecuteResult execute_statement(Statement* statement, Table* table);
 
 void serialize_row(Row* source, void* destination);
@@ -98,49 +69,6 @@ MetaCommandResult do_meta_command(InputBuffer* input_buffer, Table* table) {
   } else {
     return META_COMMAND_UNRECOGNIZED_COMMAND;
   }
-}
-
-PrepareResult prepare_statement(InputBuffer* input_buffer,
-                                Statement* statement) {
-  if (strncmp(input_buffer->buffer, "insert", 6) == 0) {
-    statement->type = STATEMENT_INSERT;
-    return prepare_insert(input_buffer, statement);
-  }
-
-  if (strncmp(input_buffer->buffer, "select", 6) == 0) {
-    statement->type = STATEMENT_SELECT;
-    return PREPARE_SUCCESS;
-  }
-
-  return PREAPRE_UNRECOGNIZED_STATEMENT;
-}
-
-PrepareResult prepare_insert(InputBuffer* input_buffer, Statement* statement) {
-  char* keyword = strtok(input_buffer->buffer, " ");
-  char* id_string = strtok(NULL, " ");
-  char* username = strtok(NULL, " ");
-  char* email = strtok(NULL, " ");
-
-  if (id_string == NULL || username == NULL || email == NULL) {
-    return PREPARE_SYNTAX_ERROR;
-  }
-
-  int id = atoi(id_string);
-  if (id < 0) {
-    return PREPARE_NEGATIVE_ID;
-  }
-  if (strlen(username) > COLUMN_USERNAME_SIZE) {
-    return PREPARE_STRING_TOO_LONG;
-  }
-  if (strlen(email) > COLUMN_EMAIL_SIZE) {
-    return PREPARE_STRING_TOO_LONG;
-  }
-
-  statement->row_to_insert.id = id;
-  strcpy(statement->row_to_insert.username, username);
-  strcpy(statement->row_to_insert.email, email);
-
-  return PREPARE_SUCCESS;
 }
 
 void print_row(Row* row) {

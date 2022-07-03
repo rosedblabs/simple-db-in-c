@@ -1,4 +1,3 @@
-
 #include "pager.h"
 
 #include "errno.h"
