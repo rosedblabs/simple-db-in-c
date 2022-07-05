@@ -1,7 +1,7 @@
 #ifndef SIMPLE_DB_C_PAGER_H
 #define SIMPLE_DB_C_PAGER_H
 
-#include "consts.c"
+#include "consts.h"
 #include "stdio.h"
 #include "stdlib.h"
 

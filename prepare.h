@@ -1,7 +1,7 @@
 #ifndef SIMPLE_DB_C_PREPARE_H
 #define SIMPLE_DB_C_PREPARE_H
 
-#include "consts.c"
+#include "consts.h"
 #include "input.h"
 #include "stdio.h"
 
